@@ -4,13 +4,18 @@ import { useAuthStore } from '@/stores/auth';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: '/login' },
     { path: '/login', component: () => import('@/pages/auth/LoginPage.vue') },
     { path: '/register', component: () => import('@/pages/auth/RegisterPage.vue') },
-    { path: '/requester', component: () => import('@/pages/requester/RequesterDashboard.vue') },
-    { path: '/validator', component: () => import('@/pages/validator/ValidatorDashboard.vue') },
     { path: '/403', component: () => import('@/pages/errors/ForbiddenPage.vue') },
     { path: '/404', component: () => import('@/pages/errors/NotFoundPage.vue') },
+    {
+      path: '/',
+      component: () => import('@/components/layout/AppLayout.vue'),
+      children: [
+        { path: 'requester', component: () => import('@/pages/requester/RequesterDashboard.vue') },
+        { path: 'validator', component: () => import('@/pages/validator/ValidatorDashboard.vue') },
+      ],
+    },
     { path: '/:pathMatch(.*)*', redirect: '/404' },
   ],
 });
