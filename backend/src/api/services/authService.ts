@@ -1,7 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { AppDataSource } from '../config/database';
-import { User, UserRole } from '../entities/User';
-import { AppError } from '../utils/AppError';
+import { AppDataSource } from '../../config/database';
+import { User, UserRole } from '../../entities/User';
+import { AppError } from '../../utils/AppError';
 
 const userRepo = () => AppDataSource.getRepository(User);
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/authService';
-import { UserRole } from '../entities/User';
+import { UserRole } from '../../entities/User';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,

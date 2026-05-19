@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { AppDataSource } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
-import authRoutes from './routes/auth';
+import authRoutes from './api/routes/auth';
 
 const app = express();
 
