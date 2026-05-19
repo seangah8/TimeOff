@@ -29,7 +29,8 @@ async function handleRegister() {
     router.push('/');
   } catch (e) {
     if (axios.isAxiosError(e) && e.response) {
-      error.value = (e.response.data as ApiError).error ?? 'Registration failed';
+      const data = e.response.data as ApiError;
+      error.value = data.details?.[0]?.message ?? data.error ?? 'Registration failed';
     } else {
       error.value = 'Something went wrong';
     }
@@ -53,6 +54,7 @@ async function handleRegister() {
             id="name"
             v-model="name"
             placeholder="Enter your name"
+            :maxlength="50"
             :disabled="loading"
             autofocus
           />

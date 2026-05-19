@@ -46,6 +46,7 @@ async function handleLogin() {
             id="name"
             v-model="name"
             placeholder="Enter your name"
+            :maxlength="50"
             :disabled="loading"
             autofocus
           />
