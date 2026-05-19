@@ -10,6 +10,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      import('@/stores/auth').then(({ useAuthStore }) => {
+        useAuthStore().clearUser();
+      });
       router.push('/login');
     }
     return Promise.reject(error);
