@@ -6,6 +6,7 @@ import cors from 'cors';
 import { AppDataSource } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './api/routes/auth';
+import vacationRoutes from './api/routes/vacations';
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/vacations', vacationRoutes);
 
 app.use(errorHandler);
 
