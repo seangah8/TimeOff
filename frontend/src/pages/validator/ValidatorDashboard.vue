@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useValidatorVacations } from '@/composables/useVacations';
 import VacationStatusBadge from '@/components/vacation/VacationStatusBadge.vue';
 import RejectDialog from '@/components/vacation/RejectDialog.vue';
+import ApproveDialog from '@/components/vacation/ApproveDialog.vue';
 import RequestDetailDialog from '@/components/vacation/RequestDetailDialog.vue';
 import type { ApiError, VacationRequest } from '@/types';
 
@@ -21,6 +22,9 @@ const statusOptions = ['All', 'Pending', 'Approved', 'Rejected'];
 
 const showDetail = ref(false);
 const detailTarget = ref<VacationRequest | null>(null);
+
+const showApproveDialog = ref(false);
+const approveTarget = ref<VacationRequest | null>(null);
 
 const showRejectDialog = ref(false);
 const rejectTarget = ref<VacationRequest | null>(null);
@@ -55,10 +59,17 @@ function refreshCurrent(): Promise<void> {
   return fetchRequests(selectedStatus.value === 'All' ? undefined : selectedStatus.value);
 }
 
-async function handleApprove(id: number) {
+function openApproveDialog(data: VacationRequest) {
+  approveTarget.value = data;
+  showApproveDialog.value = true;
+}
+
+async function handleApproveConfirmed() {
+  if (!approveTarget.value) return;
   actionLoading.value = true;
   try {
-    await approveRequest(id);
+    await approveRequest(approveTarget.value.id);
+    showApproveDialog.value = false;
     toast.add({ severity: 'success', summary: 'Request approved', life: 3000 });
     await refreshCurrent();
   } catch (e) {
@@ -141,7 +152,7 @@ async function handleRejectConfirmed(comment: string) {
                 severity="success"
                 size="small"
                 :disabled="actionLoading"
-                @click.stop="handleApprove(data.id)"
+                @click.stop="openApproveDialog(data)"
               />
               <Button
                 label="Reject"
@@ -159,6 +170,13 @@ async function handleRejectConfirmed(comment: string) {
     <RequestDetailDialog
       v-model:visible="showDetail"
       :request="detailTarget"
+    />
+
+    <ApproveDialog
+      v-model:visible="showApproveDialog"
+      :loading="actionLoading"
+      :request="approveTarget"
+      @confirmed="handleApproveConfirmed"
     />
 
     <RejectDialog
