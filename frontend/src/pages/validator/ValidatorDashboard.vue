@@ -122,8 +122,8 @@ async function handleRejectConfirmed(comment: string) {
         empty-message="No requests found."
         @row-click="onRowClick"
       >
-        <Column field="createdAt" header="Submitted">
-          <template #body="{ data }">{{ formatDate(data.createdAt) }}</template>
+        <Column field="updatedAt" header="Last Updated">
+          <template #body="{ data }">{{ formatDate(data.updatedAt) }}</template>
         </Column>
         <Column field="requester.name" header="Requester">
           <template #body="{ data }">{{ data.requester.name }}</template>

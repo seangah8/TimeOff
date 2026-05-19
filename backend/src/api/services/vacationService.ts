@@ -47,7 +47,7 @@ export async function getAll(status?: VacationStatus) {
   return vrRepo().find({
     where: status ? { status } : {},
     relations: { requester: true, validator: true },
-    order: { createdAt: 'DESC' },
+    order: { updatedAt: 'DESC' },
   });
 }
 
