@@ -46,10 +46,10 @@ Open `backend/.env` and set:
 Create the database (tables are created automatically on first run via `synchronize: true`):
 
 ```bash
-psql -U postgres -c "CREATE DATABASE timeoff;"
+npm run setup-db
 ```
 
-> **Windows:** Set the password first with `$env:PGPASSWORD="your_password"` in PowerShell, or use pgAdmin.
+This connects using the credentials in your `.env` file and creates the database if it doesn't already exist. Safe to re-run — it does nothing if the database is already there.
 
 Start the development server:
 
@@ -107,7 +107,7 @@ Tests run against a separate `timeoff_test` database — your real data is never
 Create the test database once:
 
 ```bash
-psql -U postgres -c "CREATE DATABASE timeoff_test;"
+npm run setup-db:test
 ```
 
 Run the tests:
