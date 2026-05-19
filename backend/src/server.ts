@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import { AppDataSource } from './config/database';
 
 const app = express();
 
@@ -21,6 +22,14 @@ app.get('/api/health', (_req, res) => {
 
 const PORT = process.env.PORT ?? 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+AppDataSource.initialize()
+  .then(() => {
+    console.log('Database connected');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+  });
