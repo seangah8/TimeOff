@@ -151,6 +151,7 @@ async function handleRejectConfirmed(comment: string) {
                 label="Approve"
                 severity="success"
                 size="small"
+                class="approve-btn"
                 :disabled="actionLoading"
                 @click.stop="openApproveDialog(data)"
               />
@@ -158,6 +159,7 @@ async function handleRejectConfirmed(comment: string) {
                 label="Reject"
                 severity="danger"
                 size="small"
+                class="reject-btn"
                 :disabled="actionLoading"
                 @click.stop="openRejectDialog(data)"
               />
@@ -228,5 +230,27 @@ async function handleRejectConfirmed(comment: string) {
 
 :deep(.p-datatable-tbody > tr:hover > td) {
   background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+:deep(.approve-btn.p-button) {
+  background: #d6ebe5 !important;
+  border-color: #d6ebe5 !important;
+  color: #1a6b55 !important;
+}
+:deep(.approve-btn.p-button:hover) {
+  background: #c2dfd7 !important;
+  border-color: #c2dfd7 !important;
+  color: #1a6b55 !important;
+}
+
+:deep(.reject-btn.p-button) {
+  background: #f0dede !important;
+  border-color: #f0dede !important;
+  color: #8b3030 !important;
+}
+:deep(.reject-btn.p-button:hover) {
+  background: #e5cccc !important;
+  border-color: #e5cccc !important;
+  color: #8b3030 !important;
 }
 </style>

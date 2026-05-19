@@ -52,7 +52,7 @@ function handleHide() {
 
     <template #footer>
       <Button label="Cancel" severity="secondary" text :disabled="loading" @click="handleHide" />
-      <Button label="Approve" severity="success" :loading="loading" @click="emit('confirmed')" />
+      <Button label="Approve" severity="success" class="approve-btn" :loading="loading" @click="emit('confirmed')" />
     </template>
   </Dialog>
 </template>
@@ -110,5 +110,15 @@ function handleHide() {
 .confirm-text {
   font-size: 0.9rem;
   color: #444;
+}
+
+:deep(.approve-btn.p-button) {
+  background: #d6ebe5 !important;
+  border-color: #d6ebe5 !important;
+  color: #1a6b55 !important;
+}
+:deep(.approve-btn.p-button:hover) {
+  background: #c2dfd7 !important;
+  border-color: #c2dfd7 !important;
 }
 </style>

@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
 import type { VacationRequest } from '@/types';
 
-defineProps<{ visible: boolean; loading: boolean; request: VacationRequest | null }>();
+const props = defineProps<{ visible: boolean; loading: boolean; request: VacationRequest | null }>();
+
+watch(() => props.visible, (val) => {
+  if (!val) {
+    comment.value = '';
+    commentError.value = '';
+  }
+});
 const emit = defineEmits<{
   'update:visible': [value: boolean];
   confirmed: [comment: string];
@@ -78,7 +85,7 @@ function handleHide() {
 
     <template #footer>
       <Button label="Cancel" severity="secondary" text :disabled="loading" @click="handleHide" />
-      <Button label="Reject" severity="danger" :loading="loading" @click="handleConfirm" />
+      <Button label="Reject" severity="danger" class="reject-btn" :loading="loading" @click="handleConfirm" />
     </template>
   </Dialog>
 </template>
@@ -149,5 +156,15 @@ function handleHide() {
 .comment-error {
   color: #ed5565;
   font-size: 0.875rem;
+}
+
+:deep(.reject-btn.p-button) {
+  background: #f0dede !important;
+  border-color: #f0dede !important;
+  color: #8b3030 !important;
+}
+:deep(.reject-btn.p-button:hover) {
+  background: #e5cccc !important;
+  border-color: #e5cccc !important;
 }
 </style>
