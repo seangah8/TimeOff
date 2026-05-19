@@ -26,3 +26,31 @@ export function useRequesterVacations() {
 
   return { requests, loading, fetchRequests, submitRequest };
 }
+
+export function useValidatorVacations() {
+  const requests = ref<VacationRequest[]>([]);
+  const loading = ref(false);
+
+  async function fetchRequests(status?: string): Promise<void> {
+    loading.value = true;
+    try {
+      const params = status ? { status } : {};
+      const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', {
+        params,
+      });
+      requests.value = res.data.data;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function approveRequest(id: number): Promise<void> {
+    await api.patch(`/vacations/${id}/approve`);
+  }
+
+  async function rejectRequest(id: number, comment: string): Promise<void> {
+    await api.patch(`/vacations/${id}/reject`, { comment });
+  }
+
+  return { requests, loading, fetchRequests, approveRequest, rejectRequest };
+}
