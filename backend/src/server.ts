@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { AppDataSource } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
+import authRoutes from './routes/auth';
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok' } });
 });
 
-// routes will be mounted here in later steps
+app.use('/api/auth', authRoutes);
 
 app.use(errorHandler);
 
