@@ -1,4 +1,4 @@
-# TimeOff — Vacation Management App
+# TimeOff - Vacation Management App
 
 A full-stack vacation request management application. Two roles exist: **Requesters** submit vacation requests, and **Validators** review, approve, or reject them.
 
@@ -12,7 +12,7 @@ A full-stack vacation request management application. Two roles exist: **Request
 | Backend  | Node.js + Express + TypeScript                    |
 | Database | PostgreSQL + TypeORM                              |
 | Auth     | JWT in httpOnly + SameSite=Strict cookies         |
-| Tests    | Vitest — backend integration + frontend unit      |
+| Tests    | Vitest - backend integration + frontend unit      |
 
 ---
 
@@ -39,9 +39,9 @@ cp .env.example .env
 ```
 
 Open `backend/.env` and set:
-- `DB_USERNAME` — your PostgreSQL username
-- `DB_PASSWORD` — your PostgreSQL password
-- `JWT_SECRET` — any long random string (e.g. `openssl rand -hex 32`)
+- `DB_USERNAME` - your PostgreSQL username
+- `DB_PASSWORD` - your PostgreSQL password
+- `JWT_SECRET` - any long random string (e.g. `openssl rand -hex 32`)
 
 Create the database (tables are created automatically on first run via `synchronize: true`):
 
@@ -49,7 +49,7 @@ Create the database (tables are created automatically on first run via `synchron
 npm run setup-db
 ```
 
-This connects using the credentials in your `.env` file and creates the database if it doesn't already exist. Safe to re-run — it does nothing if the database is already there.
+This connects using the credentials in your `.env` file and creates the database if it doesn't already exist. Safe to re-run - it does nothing if the database is already there.
 
 Start the development server:
 
@@ -102,7 +102,7 @@ Pre-seeded accounts you can log in with immediately:
 
 ### Backend
 
-Tests run against a separate `timeoff_test` database — your real data is never touched.
+Tests run against a separate `timeoff_test` database - your real data is never touched.
 
 Create the test database once:
 
@@ -118,9 +118,9 @@ npm test
 ```
 
 Covered:
-- `authService` — register (success, duplicate name), login (found, not found)
-- `vacationService` — submit, approve, reject, self-approval block, overlap detection, 404/409 guards
-- `vacationValidators` — date format, date order, missing fields, empty rejection comment
+- `authService` - register (success, duplicate name), login (found, not found)
+- `vacationService` - submit, approve, reject, self-approval block, overlap detection, 404/409 guards
+- `vacationValidators` - date format, date order, missing fields, empty rejection comment
 
 ### Frontend
 
@@ -130,8 +130,8 @@ npm test
 ```
 
 Covered:
-- `VacationForm` — missing dates error, end-before-start error, valid submission shape with trimmed reason
-- `useAuthStore` — login sets user, logout clears user, fetchMe on error clears user
+- `VacationForm` - missing dates error, end-before-start error, valid submission shape with trimmed reason
+- `useAuthStore` - login sets user, logout clears user, fetchMe on error clears user
 
 ---
 
@@ -144,16 +144,16 @@ All responses follow a consistent envelope:
 { "success": false, "error": "...", "details": [...] }
 ```
 
-### Auth — `/api/auth`
+### Auth - `/api/auth`
 
 | Method | Path        | Auth | Description                             |
 |--------|-------------|------|-----------------------------------------|
-| POST   | `/register` | —    | Create account, set session cookie      |
-| POST   | `/login`    | —    | Authenticate by name, set session cookie |
-| POST   | `/logout`   | —    | Clear session cookie                    |
+| POST   | `/register` | -    | Create account, set session cookie      |
+| POST   | `/login`    | -    | Authenticate by name, set session cookie |
+| POST   | `/logout`   | -    | Clear session cookie                    |
 | GET    | `/me`       | JWT  | Return current user from token          |
 
-### Vacations — `/api/vacations`
+### Vacations - `/api/vacations`
 
 | Method | Path             | Role      | Description                                   |
 |--------|------------------|-----------|-----------------------------------------------|
@@ -168,19 +168,19 @@ All responses follow a consistent envelope:
 ## Technical Decisions
 
 ### Name-only authentication (no passwords)
-Users register and log in by name only — no password. This is a deliberate simplification for a recruitment exercise context where the focus is on architecture and feature completeness rather than credential management. The session mechanism itself (JWT in an httpOnly, SameSite=Strict cookie) is production-quality.
+Users register and log in by name only - no password. This is a deliberate simplification for a recruitment exercise context where the focus is on architecture and feature completeness rather than credential management. The session mechanism itself (JWT in an httpOnly, SameSite=Strict cookie) is production-quality.
 
 ### JWT in httpOnly cookie (not localStorage)
 Storing the token in an httpOnly cookie prevents JavaScript from reading it, eliminating XSS-based token theft. SameSite=Strict blocks the token from being sent on cross-site requests, mitigating CSRF without needing a separate CSRF token.
 
 ### `synchronize: true` throughout
-TypeORM's `synchronize: true` auto-creates and updates the database schema on startup. This removes the need for migration files in a local-only development context and keeps the feedback loop fast. It is intentionally NOT safe for production — a real deployment would switch to explicit migrations.
+TypeORM's `synchronize: true` auto-creates and updates the database schema on startup. This removes the need for migration files in a local-only development context and keeps the feedback loop fast. It is intentionally NOT safe for production - a real deployment would switch to explicit migrations.
 
 ### No frontend pagination
 The vacation list uses a scrollable DataTable rather than paginated pages. For the scale of this app (~300 seeded requests) this is appropriate, avoids unnecessary complexity, and provides a smoother user experience.
 
 ### Overlapping Pending requests are allowed
-If a user submits two requests for overlapping dates and both are Pending, no error is raised — a Validator can decide how to handle it. Only overlapping **Approved** requests are blocked (409 Conflict), since two approved periods for the same person would be a data integrity issue.
+If a user submits two requests for overlapping dates and both are Pending, no error is raised - a Validator can decide how to handle it. Only overlapping **Approved** requests are blocked (409 Conflict), since two approved periods for the same person would be a data integrity issue.
 
 ### Past dates are allowed
 A requester can submit a request with a start date in the past. Retroactive requests are a valid business scenario (e.g. documenting an unplanned absence after the fact).
@@ -192,9 +192,9 @@ The Axios instance (`api/index.ts`) needs to redirect to `/login` on a 401 respo
 
 ## Known Limitations
 
-- **No password authentication** — anyone who knows (or guesses) a registered name can log in as that user. This is acceptable for a demo/recruitment context but not for production.
-- **No token refresh** — the JWT expires after 24 hours. There is no refresh token mechanism; users must log in again after expiry.
-- **`synchronize: true` in production would be dangerous** — schema changes are applied automatically on startup, which can cause data loss on destructive changes (e.g. dropping a column).
-- **No email notifications** — validators and requesters receive no notification when a request status changes; they must check the dashboard manually.
-- **No pagination on the validator dashboard** — all requests load in a single query. At very large scale (tens of thousands of requests) this would need server-side pagination.
-- **CORS is open in development** — the backend allows requests from any origin in the current configuration. A production deployment would restrict this to the known frontend origin.
+- **No password authentication** - anyone who knows (or guesses) a registered name can log in as that user. This is acceptable for a demo/recruitment context but not for production.
+- **No token refresh** - the JWT expires after 24 hours. There is no refresh token mechanism; users must log in again after expiry.
+- **`synchronize: true` in production would be dangerous** - schema changes are applied automatically on startup, which can cause data loss on destructive changes (e.g. dropping a column).
+- **No email notifications** - validators and requesters receive no notification when a request status changes; they must check the dashboard manually.
+- **No pagination on the validator dashboard** - all requests load in a single query. At very large scale (tens of thousands of requests) this would need server-side pagination.
+- **CORS is open in development** - the backend allows requests from any origin in the current configuration. A production deployment would restrict this to the known frontend origin.
