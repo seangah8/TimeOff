@@ -33,7 +33,9 @@ export async function getOwn(req: Request, res: Response, next: NextFunction) {
 export async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
     const status = req.query.status as VacationStatus | undefined;
-    const requests = await vacationService.getAll(status);
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+    const offset = Number(req.query.offset) || 0;
+    const requests = await vacationService.getAll(status, limit, offset);
     res.json({ success: true, data: requests });
   } catch (err) {
     next(err);

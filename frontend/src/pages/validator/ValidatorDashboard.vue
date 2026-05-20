@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -15,7 +15,7 @@ import type { ApiError, VacationRequest } from '@/types';
 import socket from '@/socket';
 
 const toast = useToast();
-const { requests, loading, fetchRequests, approveRequest, rejectRequest } =
+const { requests, loading, loadingMore, hasMore, fetchRequests, fetchMore, approveRequest, rejectRequest } =
   useValidatorVacations();
 
 const selectedStatus = ref('Pending');
@@ -30,9 +30,25 @@ const approveTarget = ref<VacationRequest | null>(null);
 const showRejectDialog = ref(false);
 const rejectTarget = ref<VacationRequest | null>(null);
 const actionLoading = ref(false);
+const dataTableRef = ref();
+
+function handleScroll(e: Event) {
+  if (!hasMore.value || loadingMore.value) return;
+  const el = e.target as HTMLElement;
+  if (!requests.value.length) return;
+  const rowHeight = el.scrollHeight / requests.value.length;
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < rowHeight * 50) {
+    fetchMore();
+  }
+}
+
+function getScrollEl(): HTMLElement | null {
+  return dataTableRef.value?.$el?.querySelector('.p-datatable-table-container') ?? null;
+}
 
 onMounted(() => {
   fetchRequests('Pending');
+  nextTick(() => getScrollEl()?.addEventListener('scroll', handleScroll));
   socket.on('vacation:new', (request: VacationRequest) => {
     toast.add({
       severity: 'info',
@@ -46,6 +62,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   socket.off('vacation:new');
+  getScrollEl()?.removeEventListener('scroll', handleScroll);
 });
 
 watch(selectedStatus, (status) => {
@@ -129,6 +146,7 @@ async function handleRejectConfirmed(comment: string) {
 
     <div class="list-card">
       <DataTable
+        ref="dataTableRef"
         :value="requests"
         :loading="loading"
         data-key="id"

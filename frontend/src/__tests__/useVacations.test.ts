@@ -97,23 +97,23 @@ describe('useValidatorVacations', () => {
     vi.clearAllMocks();
   });
 
-  it('fetchRequests with no filter sends empty params to GET /vacations', async () => {
+  it('fetchRequests with no filter sends limit and offset to GET /vacations', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
 
     const { requests, fetchRequests } = useValidatorVacations();
     await fetchRequests();
 
-    expect(api.get).toHaveBeenCalledWith('/vacations', { params: {} });
+    expect(api.get).toHaveBeenCalledWith('/vacations', { params: { limit: 50, offset: 0 } });
     expect(requests.value).toEqual([fakeRequest]);
   });
 
-  it('fetchRequests with a status sends the correct query param', async () => {
+  it('fetchRequests with a status includes status, limit and offset', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [] } });
 
     const { fetchRequests } = useValidatorVacations();
     await fetchRequests('Pending');
 
-    expect(api.get).toHaveBeenCalledWith('/vacations', { params: { status: 'Pending' } });
+    expect(api.get).toHaveBeenCalledWith('/vacations', { params: { status: 'Pending', limit: 50, offset: 0 } });
   });
 
   it('fetchRequests accepts Approved and Rejected as valid filters', async () => {
@@ -123,8 +123,55 @@ describe('useValidatorVacations', () => {
     await fetchRequests('Approved');
     await fetchRequests('Rejected');
 
-    expect(api.get).toHaveBeenNthCalledWith(1, '/vacations', { params: { status: 'Approved' } });
-    expect(api.get).toHaveBeenNthCalledWith(2, '/vacations', { params: { status: 'Rejected' } });
+    expect(api.get).toHaveBeenNthCalledWith(1, '/vacations', { params: { status: 'Approved', limit: 50, offset: 0 } });
+    expect(api.get).toHaveBeenNthCalledWith(2, '/vacations', { params: { status: 'Rejected', limit: 50, offset: 0 } });
+  });
+
+  it('hasMore is false when the API returns fewer rows than PAGE_SIZE', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
+
+    const { hasMore, fetchRequests } = useValidatorVacations();
+    await fetchRequests();
+
+    expect(hasMore.value).toBe(false);
+  });
+
+  it('fetchMore appends rows and advances the offset', async () => {
+    const firstPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
+    const secondPage = [{ ...fakeRequest, id: 51 }];
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ data: { success: true, data: firstPage } })
+      .mockResolvedValueOnce({ data: { success: true, data: secondPage } });
+
+    const { requests, fetchRequests, fetchMore } = useValidatorVacations();
+    await fetchRequests('Pending');
+    await fetchMore();
+
+    expect(requests.value).toHaveLength(51);
+    expect(api.get).toHaveBeenNthCalledWith(2, '/vacations', { params: { status: 'Pending', limit: 50, offset: 50 } });
+  });
+
+  it('fetchMore sets hasMore to false when the last page is partial', async () => {
+    const fullPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ data: { success: true, data: fullPage } })
+      .mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
+
+    const { hasMore, fetchRequests, fetchMore } = useValidatorVacations();
+    await fetchRequests();
+    await fetchMore();
+
+    expect(hasMore.value).toBe(false);
+  });
+
+  it('fetchMore does nothing when hasMore is false', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
+
+    const { fetchRequests, fetchMore } = useValidatorVacations();
+    await fetchRequests();      // returns 1 row → hasMore = false
+    await fetchMore();
+
+    expect(api.get).toHaveBeenCalledTimes(1);
   });
 
   it('fetchRequests resets loading to false when the API throws', async () => {

@@ -46,11 +46,13 @@ export async function getOwn(requesterId: number) {
   });
 }
 
-export async function getAll(status?: VacationStatus) {
+export async function getAll(status?: VacationStatus, limit = 50, offset = 0) {
   return vrRepo().find({
     where: status ? { status } : {},
     relations: { requester: true, validator: true },
     order: { updatedAt: 'DESC' },
+    take: limit,
+    skip: offset,
   });
 }
 

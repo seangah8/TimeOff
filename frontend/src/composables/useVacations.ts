@@ -31,20 +31,47 @@ export function useRequesterVacations() {
   return { requests, loading, fetchRequests, submitRequest, deleteRequest };
 }
 
+const PAGE_SIZE = 50;
+
 export function useValidatorVacations() {
   const requests = ref<VacationRequest[]>([]);
   const loading = ref(false);
+  const loadingMore = ref(false);
+  const hasMore = ref(true);
+
+  // Non-reactive — only used internally to build the next request.
+  let currentStatus: string | undefined;
+  let currentOffset = 0;
 
   async function fetchRequests(status?: string): Promise<void> {
+    currentStatus = status;
+    currentOffset = 0;
+    hasMore.value = true;
     loading.value = true;
     try {
-      const params = status ? { status } : {};
-      const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', {
-        params,
-      });
+      const params: Record<string, unknown> = { limit: PAGE_SIZE, offset: 0 };
+      if (status) params.status = status;
+      const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', { params });
       requests.value = res.data.data;
+      hasMore.value = res.data.data.length === PAGE_SIZE;
+      currentOffset = res.data.data.length;
     } finally {
       loading.value = false;
+    }
+  }
+
+  async function fetchMore(): Promise<void> {
+    if (!hasMore.value || loadingMore.value) return;
+    loadingMore.value = true;
+    try {
+      const params: Record<string, unknown> = { limit: PAGE_SIZE, offset: currentOffset };
+      if (currentStatus) params.status = currentStatus;
+      const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', { params });
+      requests.value = [...requests.value, ...res.data.data];
+      hasMore.value = res.data.data.length === PAGE_SIZE;
+      currentOffset += res.data.data.length;
+    } finally {
+      loadingMore.value = false;
     }
   }
 
@@ -56,5 +83,5 @@ export function useValidatorVacations() {
     await api.patch(`/vacations/${id}/reject`, { comment });
   }
 
-  return { requests, loading, fetchRequests, approveRequest, rejectRequest };
+  return { requests, loading, loadingMore, hasMore, fetchRequests, fetchMore, approveRequest, rejectRequest };
 }
