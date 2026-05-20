@@ -7,6 +7,10 @@ interface JwtPayload {
   role: UserRole;
 }
 
+// Reads the JWT from the httpOnly cookie and attaches the decoded user identity
+// to req.user so downstream route handlers can access it without hitting the DB.
+// Using a cookie instead of an Authorization header prevents JavaScript from
+// reading the token, which eliminates XSS-based token theft.
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies?.access_token;
 
@@ -20,6 +24,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     req.user = { userId: payload.userId, role: payload.role };
     next();
   } catch {
+    // jwt.verify throws if the token is expired, tampered with, or signed with the wrong secret.
     res.status(401).json({ success: false, error: 'Invalid or expired session' });
   }
 }
