@@ -38,10 +38,12 @@ Copy the example environment file and fill in your values:
 cp .env.example .env
 ```
 
-Open `backend/.env` and set:
+Open `backend/.env` and set the required values:
 - `DB_USERNAME` - your PostgreSQL username
 - `DB_PASSWORD` - your PostgreSQL password
 - `JWT_SECRET` - any long random string (e.g. `openssl rand -hex 32`)
+
+Everything else (`DB_HOST`, `DB_PORT`, `DB_NAME`, `PORT`, `JWT_EXPIRES_IN`) has sensible defaults and only needs changing if your setup differs from a standard local PostgreSQL installation.
 
 Create the database (tables are created automatically on first run via `synchronize: true`):
 
@@ -223,4 +225,4 @@ A dedicated Charts page (accessible from the validator sidebar) shows three visu
 - **No token refresh** - the JWT expires after 24 hours. There is no refresh token mechanism; users must log in again after expiry.
 - **`synchronize: true` in production would be dangerous** - schema changes are applied automatically on startup, which can cause data loss on destructive changes (e.g. dropping a column).
 - **No email notifications** - validators and requesters receive no notification when a request status changes; they must check the dashboard manually.
-- **CORS is open in development** - the backend allows requests from any origin in the current configuration. A production deployment would restrict this to the known frontend origin.
+- **CORS is restricted to `localhost:5173`** - the frontend origin is hardcoded in `server.ts`. A production deployment would need to update this to the real frontend URL.
