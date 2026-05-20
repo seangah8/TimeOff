@@ -12,7 +12,7 @@ A full-stack vacation request management application. Two roles exist: **Request
 | Backend  | Node.js + Express + TypeScript                    |
 | Database | PostgreSQL + TypeORM                              |
 | Auth     | JWT in httpOnly + SameSite=Strict cookies         |
-| Tests    | Vitest - backend integration + frontend unit      |
+| Tests    | Vitest - backend integration + frontend unit/connection |
 
 ---
 
@@ -132,6 +132,9 @@ npm test
 Covered:
 - `VacationForm` - missing dates error, end-before-start error, valid submission shape with trimmed reason
 - `useAuthStore` - login sets user, logout clears user, fetchMe on error clears user
+- `useVacations` - correct endpoint and payload for every API call (GET, POST, PATCH), loading flag resets on error
+- `api interceptor` - 401 redirects to /login and clears user, other errors pass through without redirect
+- `router guards` - unauthenticated redirects to /login, wrong-role redirects to /403, logged-in user redirected away from /login and / to their dashboard
 
 ---
 
@@ -184,6 +187,9 @@ If a user submits two requests for overlapping dates and both are Pending, no er
 
 ### Past dates are allowed
 A requester can submit a request with a start date in the past. Retroactive requests are a valid business scenario (e.g. documenting an unplanned absence after the fact).
+
+### Validator dashboard sorted by `updatedAt`, not `createdAt`
+The validator's request table shows a "Last Updated" column and sorts by `updatedAt` descending. This means recently actioned requests (approved or rejected) stay near the top, making it easy to review recent decisions. Sorting by submission date (`createdAt`) would bury those records and force a validator to scroll past already-handled requests to find the latest activity. Requesters, on the other hand, see their own list sorted by `createdAt` since they care about the order they submitted, not when the status last changed.
 
 ### Circular dependency resolved with dynamic import
 The Axios instance (`api/index.ts`) needs to redirect to `/login` on a 401 response, which requires the router. The router guard imports the Pinia auth store, which imports the Axios instance. This circular chain is broken by using a dynamic `import('@/stores/auth')` inside the interceptor function body, so it only resolves at call time rather than at module load time.
