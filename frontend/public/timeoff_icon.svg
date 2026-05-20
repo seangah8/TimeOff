@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Calendar body -->
+  <rect x="2" y="6" width="28" height="23" rx="3" fill="#1ab394"/>
+  <!-- Calendar header bar (darker teal) -->
+  <rect x="2" y="6" width="28" height="9" rx="3" fill="#17a085"/>
+  <rect x="2" y="12" width="28" height="3" fill="#17a085"/>
+  <!-- Binding pegs -->
+  <rect x="9"    y="3" width="2.5" height="7" rx="1.25" fill="#0d7a65"/>
+  <rect x="20.5" y="3" width="2.5" height="7" rx="1.25" fill="#0d7a65"/>
+  <!-- Day cells – row 1 -->
+  <rect x="6"    y="18" width="5" height="4" rx="1" fill="white" fill-opacity="0.85"/>
+  <rect x="13.5" y="18" width="5" height="4" rx="1" fill="white" fill-opacity="0.85"/>
+  <rect x="21"   y="18" width="5" height="4" rx="1" fill="white" fill-opacity="0.3"/>
+  <!-- Day cells – row 2 -->
+  <rect x="6"    y="24" width="5" height="3" rx="1" fill="white" fill-opacity="0.85"/>
+  <rect x="13.5" y="24" width="5" height="3" rx="1" fill="white" fill-opacity="0.85"/>
+  <rect x="21"   y="24" width="5" height="3" rx="1" fill="white" fill-opacity="0.85"/>
+  <!-- Sun in the header corner -->
+  <circle cx="24.5" cy="10" r="3.5" fill="#f9c74f"/>
+</svg>

@@ -9,7 +9,10 @@ const auth = useAuthStore();
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar-logo">TimeOff</div>
+    <div class="sidebar-logo">
+      <img src="/timeoff_icon.svg" class="logo-icon" alt="" aria-hidden="true" />
+      TimeOff
+    </div>
     <nav>
       <RouterLink
         v-if="auth.user?.role === 'Requester'"
@@ -53,12 +56,21 @@ const auth = useAuthStore();
 }
 
 .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 1.5rem 1.25rem;
   font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   letter-spacing: 0.05em;
+}
+
+.logo-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
 }
 
 nav {

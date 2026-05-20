@@ -36,6 +36,7 @@ async function handleLogin() {
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
+        <img src="/timeoff_icon.svg" class="auth-logo" alt="" aria-hidden="true" />
         <h1 class="auth-brand">TimeOff</h1>
         <p class="auth-subtitle">Sign in to your account</p>
       </div>
@@ -83,6 +84,12 @@ async function handleLogin() {
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.auth-logo {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 0.75rem;
 }
 
 .auth-brand {
