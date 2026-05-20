@@ -67,7 +67,17 @@ export async function approve(requestId: number, validatorId: number) {
   });
   if (!request) throw new AppError('Request not found', 404);
   if (request.requester.id === validatorId) throw new AppError('You cannot approve your own request', 403);
-  if (request.status === VacationStatus.Approved) throw new AppError('Request is already approved', 409);
+  if (request.status !== VacationStatus.Pending) throw new AppError('Only pending requests can be approved', 409);
+
+  const overlap = await vrRepo().findOne({
+    where: {
+      requester: { id: request.requester.id },
+      status: VacationStatus.Approved,
+      startDate: LessThanOrEqual(request.endDate),
+      endDate: MoreThanOrEqual(request.startDate),
+    },
+  });
+  if (overlap) throw new AppError('This requester already has an approved request overlapping these dates', 409);
 
   request.status = VacationStatus.Approved;
   request.validator = { id: validatorId } as User;
@@ -155,7 +165,7 @@ export async function reject(requestId: number, validatorId: number, comment: st
   });
   if (!request) throw new AppError('Request not found', 404);
   if (request.requester.id === validatorId) throw new AppError('You cannot reject your own request', 403);
-  if (request.status === VacationStatus.Rejected) throw new AppError('Request is already rejected', 409);
+  if (request.status !== VacationStatus.Pending) throw new AppError('Only pending requests can be rejected', 409);
 
   request.status = VacationStatus.Rejected;
   request.comment = comment;

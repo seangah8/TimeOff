@@ -13,6 +13,14 @@ const showDetail = ref(false);
 const selectedRequest = ref<VacationRequest | null>(null);
 
 function formatDate(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatTimestamp(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -45,7 +53,7 @@ function onDeleteConfirmed(id: number) {
       @row-click="onRowClick"
     >
       <Column field="createdAt" header="Submitted">
-        <template #body="{ data }">{{ formatDate(data.createdAt) }}</template>
+        <template #body="{ data }">{{ formatTimestamp(data.createdAt) }}</template>
       </Column>
       <Column field="startDate" header="Start Date">
         <template #body="{ data }">{{ formatDate(data.startDate) }}</template>

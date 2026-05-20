@@ -81,6 +81,14 @@ watch(searchName, (val) => {
 });
 
 function formatDate(dateStr: string): string {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatTimestamp(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -181,7 +189,7 @@ async function handleRejectConfirmed(comment: string) {
         @row-click="onRowClick"
       >
         <Column field="updatedAt" header="Last Updated">
-          <template #body="{ data }">{{ formatDate(data.updatedAt) }}</template>
+          <template #body="{ data }">{{ formatTimestamp(data.updatedAt) }}</template>
         </Column>
         <Column field="requester.name" header="Requester">
           <template #body="{ data }">{{ data.requester.name }}</template>
