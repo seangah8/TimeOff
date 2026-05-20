@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -81,7 +81,7 @@ watch(searchName, (val) => {
 });
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -98,6 +98,10 @@ function getErrorMessage(e: unknown): string {
     ? (e.response.data as ApiError).error
     : 'Something went wrong';
 }
+
+const hasActiveFilter = computed(
+  () => selectedStatus.value !== 'All' || searchName.value.trim() !== '',
+);
 
 function refreshCurrent(): Promise<void> {
   return fetchRequests(
@@ -166,6 +170,7 @@ async function handleRejectConfirmed(comment: string) {
 
     <div class="list-card">
       <DataTable
+        v-if="loading || requests.length > 0"
         ref="dataTableRef"
         :value="requests"
         :loading="loading"
@@ -173,7 +178,6 @@ async function handleRejectConfirmed(comment: string) {
         striped-rows
         scrollable
         scroll-height="calc(100vh - 280px)"
-        empty-message="No requests found."
         @row-click="onRowClick"
       >
         <Column field="updatedAt" header="Last Updated">
@@ -221,6 +225,12 @@ async function handleRejectConfirmed(comment: string) {
           </template>
         </Column>
       </DataTable>
+
+      <div v-else class="empty-state">
+        <i class="pi pi-inbox empty-icon" />
+        <p class="empty-title">{{ hasActiveFilter ? 'No requests match your filters' : 'No requests yet' }}</p>
+        <p class="empty-sub">{{ hasActiveFilter ? 'Try adjusting the status filter or search term.' : 'Vacation requests submitted by employees will appear here.' }}</p>
+      </div>
     </div>
 
     <RequestDetailDialog
@@ -288,6 +298,34 @@ async function handleRejectConfirmed(comment: string) {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 0.4rem;
+}
+
+.empty-icon {
+  font-size: 2.75rem;
+  color: #d9d9d9;
+  margin-bottom: 0.5rem;
+}
+
+.empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #aaa;
+  margin: 0;
+}
+
+.empty-sub {
+  font-size: 0.85rem;
+  color: #c0c0c0;
+  margin: 0;
 }
 
 .actions {

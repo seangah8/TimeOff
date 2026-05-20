@@ -13,7 +13,7 @@ const showDetail = ref(false);
 const selectedRequest = ref<VacationRequest | null>(null);
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -35,13 +35,13 @@ function onDeleteConfirmed(id: number) {
   <div class="list-card">
     <h2 class="list-title">My Requests</h2>
     <DataTable
+      v-if="loading || requests.length > 0"
       :value="requests"
       :loading="loading"
       data-key="id"
       striped-rows
       scrollable
       scroll-height="calc(100vh - 280px)"
-      empty-message="No vacation requests yet."
       @row-click="onRowClick"
     >
       <Column field="createdAt" header="Submitted">
@@ -64,6 +64,12 @@ function onDeleteConfirmed(id: number) {
         </template>
       </Column>
     </DataTable>
+
+    <div v-else class="empty-state">
+      <i class="pi pi-calendar-times empty-icon" />
+      <p class="empty-title">No requests yet</p>
+      <p class="empty-sub">Your submitted vacation requests will appear here.</p>
+    </div>
   </div>
 
   <RequestDetailDialog
@@ -88,6 +94,34 @@ function onDeleteConfirmed(id: number) {
   font-weight: 600;
   color: #333;
   margin-bottom: 1.25rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 0.4rem;
+}
+
+.empty-icon {
+  font-size: 2.75rem;
+  color: #d9d9d9;
+  margin-bottom: 0.5rem;
+}
+
+.empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #aaa;
+  margin: 0;
+}
+
+.empty-sub {
+  font-size: 0.85rem;
+  color: #c0c0c0;
+  margin: 0;
 }
 
 .reason-text {

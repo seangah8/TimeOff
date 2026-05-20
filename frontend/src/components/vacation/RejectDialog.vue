@@ -22,7 +22,7 @@ const comment = ref('');
 const commentError = ref('');
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+  return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
