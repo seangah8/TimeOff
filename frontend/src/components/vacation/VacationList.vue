@@ -13,7 +13,7 @@ const showDetail = ref(false);
 const selectedRequest = ref<VacationRequest | null>(null);
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-GB', {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
