@@ -45,7 +45,7 @@ const auth = useAuthStore();
 <style scoped>
 .sidebar {
   width: 220px;
-  min-height: 100vh;
+  height: 100%;
   background-color: #2f4050;
   display: flex;
   flex-direction: column;

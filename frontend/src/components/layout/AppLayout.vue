@@ -26,7 +26,8 @@ onUnmounted(() => socket.disconnect());
 <style scoped>
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .app-main {
@@ -35,10 +36,12 @@ onUnmounted(() => socket.disconnect());
   flex-direction: column;
   background: #f3f3f4;
   min-width: 0;
+  overflow: hidden;
 }
 
 .app-content {
   flex: 1;
   padding: 1.5rem;
+  overflow-y: auto;
 }
 </style>
