@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -12,6 +12,7 @@ import RejectDialog from '@/components/vacation/RejectDialog.vue';
 import ApproveDialog from '@/components/vacation/ApproveDialog.vue';
 import RequestDetailDialog from '@/components/vacation/RequestDetailDialog.vue';
 import type { ApiError, VacationRequest } from '@/types';
+import socket from '@/socket';
 
 const toast = useToast();
 const { requests, loading, fetchRequests, approveRequest, rejectRequest } =
@@ -30,7 +31,22 @@ const showRejectDialog = ref(false);
 const rejectTarget = ref<VacationRequest | null>(null);
 const actionLoading = ref(false);
 
-onMounted(() => fetchRequests('Pending'));
+onMounted(() => {
+  fetchRequests('Pending');
+  socket.on('vacation:new', (request: VacationRequest) => {
+    toast.add({
+      severity: 'info',
+      summary: `New request from ${request.requester.name}`,
+      detail: `${formatDate(request.startDate)} → ${formatDate(request.endDate)}`,
+      life: 5000,
+    });
+    refreshCurrent();
+  });
+});
+
+onUnmounted(() => {
+  socket.off('vacation:new');
+});
 
 watch(selectedStatus, (status) => {
   fetchRequests(status === 'All' ? undefined : status);

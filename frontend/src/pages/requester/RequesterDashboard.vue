@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
@@ -7,14 +7,40 @@ import axios from 'axios';
 import { useRequesterVacations } from '@/composables/useVacations';
 import VacationForm from '@/components/vacation/VacationForm.vue';
 import VacationList from '@/components/vacation/VacationList.vue';
-import type { ApiError } from '@/types';
+import type { ApiError, VacationRequest } from '@/types';
+import socket from '@/socket';
 
 const toast = useToast();
 const { requests, loading, fetchRequests, submitRequest, deleteRequest } = useRequesterVacations();
 const submitting = ref(false);
 const showForm = ref(false);
 
-onMounted(fetchRequests);
+onMounted(() => {
+  fetchRequests();
+  socket.on('vacation:approved', (request: VacationRequest) => {
+    toast.add({
+      severity: 'success',
+      summary: 'Request approved!',
+      detail: `${request.startDate} → ${request.endDate}`,
+      life: 6000,
+    });
+    fetchRequests();
+  });
+  socket.on('vacation:rejected', (request: VacationRequest) => {
+    toast.add({
+      severity: 'error',
+      summary: 'Request rejected',
+      detail: request.comment ?? undefined,
+      life: 6000,
+    });
+    fetchRequests();
+  });
+});
+
+onUnmounted(() => {
+  socket.off('vacation:approved');
+  socket.off('vacation:rejected');
+});
 
 async function handleDeleteRequest(id: number) {
   try {

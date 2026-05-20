@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import 'dotenv/config';
+import { createServer } from 'http';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -7,6 +8,7 @@ import { AppDataSource } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './api/routes/auth';
 import vacationRoutes from './api/routes/vacations';
+import { initSocket } from './socket';
 
 const app = express();
 
@@ -30,10 +32,13 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT ?? 3000;
 
+const httpServer = createServer(app);
+initSocket(httpServer);
+
 AppDataSource.initialize()
   .then(() => {
     console.log('Database connected');
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
   })

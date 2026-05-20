@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
 import Toast from 'primevue/toast';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
+import socket from '@/socket';
+
+onMounted(() => socket.connect());
+onUnmounted(() => socket.disconnect());
 </script>
 
 <template>

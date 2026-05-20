@@ -3,6 +3,7 @@ import { AppDataSource } from '../../config/database';
 import { VacationRequest, VacationStatus } from '../../entities/VacationRequest';
 import { User } from '../../entities/User';
 import { AppError } from '../../utils/AppError';
+import { getIO } from '../../socket';
 
 const vrRepo = () => AppDataSource.getRepository(VacationRequest);
 
@@ -30,10 +31,12 @@ export async function submit(
   });
   await vrRepo().save(request);
 
-  return vrRepo().findOne({
+  const saved = await vrRepo().findOne({
     where: { id: request.id },
     relations: { requester: true },
   });
+  getIO()?.to('role:Validator').emit('vacation:new', saved);
+  return saved;
 }
 
 export async function getOwn(requesterId: number) {
@@ -64,10 +67,12 @@ export async function approve(requestId: number, validatorId: number) {
   request.validator = { id: validatorId } as User;
   await vrRepo().save(request);
 
-  return vrRepo().findOne({
+  const approved = await vrRepo().findOne({
     where: { id: requestId },
     relations: { requester: true, validator: true },
   });
+  getIO()?.to(`user:${request.requester.id}`).emit('vacation:approved', approved);
+  return approved;
 }
 
 export async function deleteRequest(requestId: number, requesterId: number) {
@@ -96,8 +101,10 @@ export async function reject(requestId: number, validatorId: number, comment: st
   request.validator = { id: validatorId } as User;
   await vrRepo().save(request);
 
-  return vrRepo().findOne({
+  const rejected = await vrRepo().findOne({
     where: { id: requestId },
     relations: { requester: true, validator: true },
   });
+  getIO()?.to(`user:${request.requester.id}`).emit('vacation:rejected', rejected);
+  return rejected;
 }

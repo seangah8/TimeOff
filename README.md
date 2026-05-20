@@ -203,6 +203,9 @@ Features added beyond the assignment requirements.
 ### Authentication pages (Login & Register)
 The assignment did not specify user management — only that two roles exist. Rather than hardcoding a user or passing an ID in the URL, a proper login and register flow was added so each person can create their own account and sign in by name. This makes the app feel complete and realistic, and gives the role-based routing something meaningful to protect.
 
+### Real-time updates with Socket.io
+When a requester submits a new vacation request, all connected validators see the table refresh and receive a toast with the requester's name and the requested dates — no manual refresh needed. When a validator approves or rejects a request, the relevant requester's table updates instantly and they receive a toast showing the outcome and the validator's comment if rejected. The socket connection is authenticated using the same JWT cookie already in the browser, so no extra login step is needed. The server emits to targeted rooms (`user:{id}` for personal notifications, `role:Validator` for broadcast to all validators) so each user only receives events relevant to them.
+
 ### Delete pending requests
 Requesters can delete any of their own vacation requests as long as the status is still Pending. Once a validator has acted on a request (Approved or Rejected) it becomes read-only, since removing it would silently erase the validator's recorded decision. The delete button appears in the request detail dialog with a one-step inline confirmation to prevent accidental deletions.
 
