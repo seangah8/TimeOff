@@ -181,9 +181,6 @@ Storing the token in an httpOnly cookie prevents JavaScript from reading it, eli
 ### `synchronize: true` throughout
 TypeORM's `synchronize: true` auto-creates and updates the database schema on startup. This removes the need for migration files in a local-only development context and keeps the feedback loop fast. It is intentionally NOT safe for production - a real deployment would switch to explicit migrations.
 
-### Server-side pagination with infinite scroll
-The validator dashboard loads 50 requests per page using `LIMIT`/`OFFSET` queries (capped at 100 per request). The frontend tracks the current offset and a `hasMore` flag and appends the next page automatically as the validator scrolls within 50 rows of the bottom. Resetting the status filter or search term resets to page one. This avoids loading all records upfront while providing a smoother experience than numbered pages.
-
 ### Overlapping Pending requests are allowed
 If a user submits two requests for overlapping dates and both are Pending, no error is raised - a Validator can decide how to handle it. Only overlapping **Approved** requests are blocked (409 Conflict), since two approved periods for the same person would be a data integrity issue.
 
@@ -207,6 +204,9 @@ The assignment did not specify user management - only that two roles exist. Rath
 
 ### Real-time updates with Socket.io
 When a requester submits a new vacation request, all connected validators see the table refresh and receive a toast with the requester's name and the requested dates - no manual refresh needed. When a validator approves or rejects a request, the relevant requester's table updates instantly and they receive a toast showing the outcome and the validator's comment if rejected. The socket connection is authenticated using the same JWT cookie already in the browser, so no extra login step is needed. The server emits to targeted rooms (`user:{id}` for personal notifications, `role:Validator` for broadcast to all validators) so each user only receives events relevant to them.
+
+### Server-side pagination with infinite scroll
+The validator dashboard loads 50 requests per page using `LIMIT`/`OFFSET` queries (capped at 100 per request). The frontend tracks the current offset and a `hasMore` flag and appends the next page automatically as the validator scrolls within 50 rows of the bottom. Resetting the status filter or search term resets to page one. This avoids loading all records upfront while providing a smoother experience than numbered pages.
 
 ### Delete pending requests
 Requesters can delete any of their own vacation requests as long as the status is still Pending. Once a validator has acted on a request (Approved or Rejected) it becomes read-only, since removing it would silently erase the validator's recorded decision. The delete button appears in the request detail dialog with a one-step inline confirmation to prevent accidental deletions.
