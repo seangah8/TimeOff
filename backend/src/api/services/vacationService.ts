@@ -1,4 +1,4 @@
-import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { ILike, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { AppDataSource } from '../../config/database';
 import { VacationRequest, VacationStatus } from '../../entities/VacationRequest';
 import { User } from '../../entities/User';
@@ -46,9 +46,13 @@ export async function getOwn(requesterId: number) {
   });
 }
 
-export async function getAll(status?: VacationStatus, limit = 50, offset = 0) {
+export async function getAll(status?: VacationStatus, limit = 50, offset = 0, name?: string) {
+  const where: Record<string, unknown> = {};
+  if (status) where.status = status;
+  if (name) where.requester = { name: ILike(`%${name}%`) };
+
   return vrRepo().find({
-    where: status ? { status } : {},
+    where,
     relations: { requester: true, validator: true },
     order: { updatedAt: 'DESC' },
     take: limit,

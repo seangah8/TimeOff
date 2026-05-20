@@ -212,6 +212,9 @@ When a requester submits a new vacation request, all connected validators see th
 ### Delete pending requests
 Requesters can delete any of their own vacation requests as long as the status is still Pending. Once a validator has acted on a request (Approved or Rejected) it becomes read-only, since removing it would silently erase the validator's recorded decision. The delete button appears in the request detail dialog with a one-step inline confirmation to prevent accidental deletions.
 
+### Search by requester name on the validator dashboard
+A search bar in the validator dashboard header lets validators filter requests by requester name. The query fires only after the user stops typing for 500ms (debounce) to avoid a request on every keystroke. The filter is case-insensitive and partial (typing "ali" matches "Alice"), works alongside the status filter, and resets to page one on each new search. The name filter is carried through to subsequent infinite-scroll pages so the full result set for a given search is reachable by scrolling.
+
 ---
 
 ## Known Limitations

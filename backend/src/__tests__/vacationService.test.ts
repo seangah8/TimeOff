@@ -127,6 +127,20 @@ describe('vacationService.deleteRequest', () => {
   });
 });
 
+describe('vacationService.getAll', () => {
+  it('filters by requester name (case-insensitive partial match)', async () => {
+    const alice = await createRequester('Alice Smith');
+    const bob = await createRequester('Bob Jones');
+    await vacationService.submit(alice.id, '2026-06-01', '2026-06-05', null);
+    await vacationService.submit(bob.id, '2026-06-06', '2026-06-10', null);
+
+    const results = await vacationService.getAll(undefined, 50, 0, 'alice');
+
+    expect(results.every((r) => r.requester.name.toLowerCase().includes('alice'))).toBe(true);
+    expect(results.some((r) => r.requester.name === 'Alice Smith')).toBe(true);
+  });
+});
+
 describe('vacationService.reject', () => {
   it('rejects a pending request with a comment', async () => {
     const requester = await createRequester();

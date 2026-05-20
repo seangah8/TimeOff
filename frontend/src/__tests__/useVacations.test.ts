@@ -174,6 +174,28 @@ describe('useValidatorVacations', () => {
     expect(api.get).toHaveBeenCalledTimes(1);
   });
 
+  it('fetchRequests with a name filter includes name, limit and offset', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [] } });
+
+    const { fetchRequests } = useValidatorVacations();
+    await fetchRequests(undefined, 'Alice');
+
+    expect(api.get).toHaveBeenCalledWith('/vacations', { params: { name: 'Alice', limit: 50, offset: 0 } });
+  });
+
+  it('fetchMore carries the name filter from the last fetchRequests call', async () => {
+    const fullPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ data: { success: true, data: fullPage } })
+      .mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
+
+    const { fetchRequests, fetchMore } = useValidatorVacations();
+    await fetchRequests('Pending', 'Alice');
+    await fetchMore();
+
+    expect(api.get).toHaveBeenNthCalledWith(2, '/vacations', { params: { status: 'Pending', name: 'Alice', limit: 50, offset: 50 } });
+  });
+
   it('fetchRequests resets loading to false when the API throws', async () => {
     vi.mocked(api.get).mockRejectedValueOnce(new Error('Server error'));
 

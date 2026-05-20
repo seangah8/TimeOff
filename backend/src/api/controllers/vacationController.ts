@@ -35,7 +35,8 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
     const status = req.query.status as VacationStatus | undefined;
     const limit = Math.min(Number(req.query.limit) || 50, 100);
     const offset = Number(req.query.offset) || 0;
-    const requests = await vacationService.getAll(status, limit, offset);
+    const name = req.query.name as string | undefined;
+    const requests = await vacationService.getAll(status, limit, offset, name);
     res.json({ success: true, data: requests });
   } catch (err) {
     next(err);

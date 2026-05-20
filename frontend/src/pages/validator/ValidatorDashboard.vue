@@ -5,6 +5,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import SelectButton from 'primevue/selectbutton';
+import InputText from 'primevue/inputtext';
 import axios from 'axios';
 import { useValidatorVacations } from '@/composables/useVacations';
 import VacationStatusBadge from '@/components/vacation/VacationStatusBadge.vue';
@@ -20,6 +21,9 @@ const { requests, loading, loadingMore, hasMore, fetchRequests, fetchMore, appro
 
 const selectedStatus = ref('Pending');
 const statusOptions = ['All', 'Pending', 'Approved', 'Rejected'];
+
+const searchName = ref('');
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const showDetail = ref(false);
 const detailTarget = ref<VacationRequest | null>(null);
@@ -66,7 +70,14 @@ onUnmounted(() => {
 });
 
 watch(selectedStatus, (status) => {
-  fetchRequests(status === 'All' ? undefined : status);
+  fetchRequests(status === 'All' ? undefined : status, searchName.value.trim() || undefined);
+});
+
+watch(searchName, (val) => {
+  if (debounceTimer !== null) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    fetchRequests(selectedStatus.value === 'All' ? undefined : selectedStatus.value, val.trim() || undefined);
+  }, 500);
 });
 
 function formatDate(dateStr: string): string {
@@ -89,7 +100,10 @@ function getErrorMessage(e: unknown): string {
 }
 
 function refreshCurrent(): Promise<void> {
-  return fetchRequests(selectedStatus.value === 'All' ? undefined : selectedStatus.value);
+  return fetchRequests(
+    selectedStatus.value === 'All' ? undefined : selectedStatus.value,
+    searchName.value.trim() || undefined,
+  );
 }
 
 function openApproveDialog(data: VacationRequest) {
@@ -137,11 +151,17 @@ async function handleRejectConfirmed(comment: string) {
   <div>
     <div class="page-header">
       <h1 class="page-title">All Vacation Requests</h1>
-      <SelectButton
-        v-model="selectedStatus"
-        :options="statusOptions"
-        :allow-empty="false"
-      />
+      <div class="header-controls">
+        <span class="p-input-icon-left search-wrapper">
+          <i class="pi pi-search" />
+          <InputText v-model="searchName" placeholder="Search by name…" class="search-input" />
+        </span>
+        <SelectButton
+          v-model="selectedStatus"
+          :options="statusOptions"
+          :allow-empty="false"
+        />
+      </div>
     </div>
 
     <div class="list-card">
@@ -230,6 +250,31 @@ async function handleRejectConfirmed(comment: string) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-wrapper .pi {
+  position: absolute;
+  left: 0.75rem;
+  color: #888;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.2rem !important;
+  width: 200px;
 }
 
 .page-title {

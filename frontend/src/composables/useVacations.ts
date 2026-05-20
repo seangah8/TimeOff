@@ -41,16 +41,19 @@ export function useValidatorVacations() {
 
   // Non-reactive — only used internally to build the next request.
   let currentStatus: string | undefined;
+  let currentName: string | undefined;
   let currentOffset = 0;
 
-  async function fetchRequests(status?: string): Promise<void> {
+  async function fetchRequests(status?: string, name?: string): Promise<void> {
     currentStatus = status;
+    currentName = name;
     currentOffset = 0;
     hasMore.value = true;
     loading.value = true;
     try {
       const params: Record<string, unknown> = { limit: PAGE_SIZE, offset: 0 };
       if (status) params.status = status;
+      if (name) params.name = name;
       const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', { params });
       requests.value = res.data.data;
       hasMore.value = res.data.data.length === PAGE_SIZE;
@@ -66,6 +69,7 @@ export function useValidatorVacations() {
     try {
       const params: Record<string, unknown> = { limit: PAGE_SIZE, offset: currentOffset };
       if (currentStatus) params.status = currentStatus;
+      if (currentName) params.name = currentName;
       const res = await api.get<{ success: true; data: VacationRequest[] }>('/vacations', { params });
       requests.value = [...requests.value, ...res.data.data];
       hasMore.value = res.data.data.length === PAGE_SIZE;
