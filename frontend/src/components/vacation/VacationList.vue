@@ -12,6 +12,9 @@ const emit = defineEmits<{ 'delete-request': [id: number] }>();
 const showDetail = ref(false);
 const selectedRequest = ref<VacationRequest | null>(null);
 
+// For date-only strings (startDate, endDate) from PostgreSQL's date type.
+// Appending T00:00:00 forces local-timezone parsing — without it, the string is
+// parsed as UTC midnight which shifts the displayed date back by one day in UTC+ zones.
 function formatDate(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -20,6 +23,8 @@ function formatDate(dateStr: string): string {
   });
 }
 
+// For full ISO timestamps (createdAt, updatedAt) — these already carry timezone info
+// so new Date() converts them to local time correctly without any adjustment.
 function formatTimestamp(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', {
     day: '2-digit',

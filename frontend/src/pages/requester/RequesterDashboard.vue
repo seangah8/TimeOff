@@ -17,6 +17,7 @@ const showForm = ref(false);
 
 onMounted(() => {
   fetchRequests();
+  // Listen for real-time events sent by the server when a validator acts on this user's requests.
   socket.on('vacation:approved', (request: VacationRequest) => {
     toast.add({
       severity: 'success',

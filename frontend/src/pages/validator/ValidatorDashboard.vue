@@ -23,6 +23,7 @@ const selectedStatus = ref('Pending');
 const statusOptions = ['All', 'Pending', 'Approved', 'Rejected'];
 
 const searchName = ref('');
+// Debounce timer — delays the API call until the user stops typing for 500ms.
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const showDetail = ref(false);
@@ -36,6 +37,8 @@ const rejectTarget = ref<VacationRequest | null>(null);
 const actionLoading = ref(false);
 const dataTableRef = ref();
 
+// Triggers infinite scroll when the user is within 50 row-heights of the bottom.
+// rowHeight is estimated from the total scroll height divided by the current row count.
 function handleScroll(e: Event) {
   if (!hasMore.value || loadingMore.value) return;
   const el = e.target as HTMLElement;
@@ -53,6 +56,7 @@ function getScrollEl(): HTMLElement | null {
 onMounted(() => {
   fetchRequests('Pending');
   nextTick(() => getScrollEl()?.addEventListener('scroll', handleScroll));
+  // Show a toast and refresh the table whenever a requester submits a new request.
   socket.on('vacation:new', (request: VacationRequest) => {
     toast.add({
       severity: 'info',

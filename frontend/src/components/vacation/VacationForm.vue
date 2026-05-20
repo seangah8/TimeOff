@@ -16,6 +16,9 @@ const dateError = ref('');
 
 const minEndDate = computed(() => startDate.value ?? undefined);
 
+// Build a YYYY-MM-DD string using LOCAL date components.
+// date.toISOString() would give UTC midnight, which shifts the date backward
+// for users in UTC+ timezones (e.g. picking Jan 15 sends Jan 14 to the server).
 function formatDate(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
