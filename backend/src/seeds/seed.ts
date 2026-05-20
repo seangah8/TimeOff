@@ -62,7 +62,7 @@ async function seed() {
 
   for (let i = 1; i <= 100; i++) {
     const requester = await userRepo.save(
-      userRepo.create({ name: `Sean Gah ${i}`, role: UserRole.Requester }),
+      userRepo.create({ name: `Sean ${i}`, role: UserRole.Requester }),
     );
 
     const requestCount = randomInt(0, 4);

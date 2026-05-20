@@ -94,7 +94,7 @@ Pre-seeded accounts you can log in with immediately:
 | Role      | Names                                                         |
 |-----------|---------------------------------------------------------------|
 | Validator | `Morgan`, `Jordan`, `Taylor`, `Casey`, `Riley`, `Quinn`, `Avery`, `Blake`, `Cameron`, `Drew` |
-| Requester | `Alex 1` through `Alex 100`                                   |
+| Requester | `Sean 1` through `Sean 100`                                   |
 
 ---
 
