@@ -14,6 +14,7 @@ const router = createRouter({
       children: [
         { path: 'requester', component: () => import('@/pages/requester/RequesterDashboard.vue') },
         { path: 'validator', component: () => import('@/pages/validator/ValidatorDashboard.vue') },
+        { path: 'validator/charts', component: () => import('@/pages/validator/ValidatorCharts.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/404' },

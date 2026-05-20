@@ -2,6 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import * as vacationService from '../services/vacationService';
 import { VacationStatus } from '../../entities/VacationRequest';
 
+export async function getStats(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const stats = await vacationService.getStats();
+    res.json({ success: true, data: stats });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function submit(req: Request, res: Response, next: NextFunction) {
   try {
     const { startDate, endDate, reason } = req.body as {

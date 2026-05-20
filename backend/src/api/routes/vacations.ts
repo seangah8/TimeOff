@@ -31,6 +31,13 @@ router.get(
   vacationController.getAll,
 );
 
+router.get(
+  '/stats',
+  authenticate,
+  requireRole(UserRole.Validator),
+  vacationController.getStats,
+);
+
 router.delete(
   '/:id',
   authenticate,

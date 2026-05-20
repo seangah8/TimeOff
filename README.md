@@ -212,6 +212,9 @@ When a requester submits a new vacation request, all connected validators see th
 ### Delete pending requests
 Requesters can delete any of their own vacation requests as long as the status is still Pending. Once a validator has acted on a request (Approved or Rejected) it becomes read-only, since removing it would silently erase the validator's recorded decision. The delete button appears in the request detail dialog with a one-step inline confirmation to prevent accidental deletions.
 
+### Statistics & charts page for validators
+A dedicated Charts page (accessible from the validator sidebar) shows three visualisations built with Chart.js. An area chart displays the number of users with an active approved vacation and active approved-or-pending vacation per month, spanning 37 months (24 past, current, 12 ahead) and draggable along the x-axis to explore past or future months. A donut chart shows the current split of Pending / Approved / Rejected requests at a glance. A second area chart shows how many requests were submitted each month over the same time range, also pannable. All data is computed in a single backend query and returned from a dedicated `GET /api/vacations/stats` endpoint (Validator only). Summary count chips at the top reinforce the totals shown in the donut.
+
 ### Search by requester name on the validator dashboard
 A search bar in the validator dashboard header lets validators filter requests by requester name. The query fires only after the user stops typing for 500ms (debounce) to avoid a request on every keystroke. The filter is case-insensitive and partial (typing "ali" matches "Alice"), works alongside the status filter, and resets to page one on each new search. The name filter is carried through to subsequent infinite-scroll pages so the full result set for a given search is reachable by scrolling.
 

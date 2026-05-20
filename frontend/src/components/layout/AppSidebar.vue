@@ -24,10 +24,19 @@ const auth = useAuthStore();
         v-if="auth.user?.role === 'Validator'"
         to="/validator"
         class="nav-item"
-        :class="{ active: route.path.startsWith('/validator') }"
+        :class="{ active: route.path === '/validator' }"
       >
         <i class="pi pi-list" />
         All Requests
+      </RouterLink>
+      <RouterLink
+        v-if="auth.user?.role === 'Validator'"
+        to="/validator/charts"
+        class="nav-item"
+        :class="{ active: route.path === '/validator/charts' }"
+      >
+        <i class="pi pi-chart-bar" />
+        Statistics & Charts
       </RouterLink>
     </nav>
   </aside>

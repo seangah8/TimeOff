@@ -93,6 +93,61 @@ export async function deleteRequest(requestId: number, requesterId: number) {
   await vrRepo().remove(request);
 }
 
+export async function getStats() {
+  const all = await vrRepo().find({ relations: { requester: true } });
+
+  const statusCounts = { Pending: 0, Approved: 0, Rejected: 0 };
+  for (const r of all) statusCounts[r.status]++;
+
+  // Weekly window: 100 weeks past → current → 50 weeks ahead (150 data points)
+  const getMonday = (d: Date): Date => {
+    const day = d.getDay();
+    const copy = new Date(d);
+    copy.setDate(copy.getDate() + (day === 0 ? -6 : 1 - day));
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+  };
+
+  const rangeStart = getMonday(new Date());
+  rangeStart.setDate(rangeStart.getDate() - 100 * 7);
+
+  const weeks: Array<{
+    label: string;
+    approvedCoverage: number;
+    activeCoverage: number;
+    submissions: number;
+  }> = [];
+
+  for (let i = 0; i <= 150; i++) {
+    const weekStart = new Date(rangeStart);
+    weekStart.setDate(weekStart.getDate() + i * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    const startStr = weekStart.toISOString().slice(0, 10);
+    const endStr = weekEnd.toISOString().slice(0, 10);
+
+    const approvedIds = new Set<number>();
+    const activeIds = new Set<number>();
+    let submissions = 0;
+
+    for (const r of all) {
+      if (r.startDate <= endStr && r.endDate >= startStr) {
+        if (r.status === VacationStatus.Approved) approvedIds.add(r.requester.id);
+        if (r.status === VacationStatus.Approved || r.status === VacationStatus.Pending) {
+          activeIds.add(r.requester.id);
+        }
+      }
+      const createdStr = r.createdAt.toISOString().slice(0, 10);
+      if (createdStr >= startStr && createdStr <= endStr) submissions++;
+    }
+
+    weeks.push({ label: startStr, approvedCoverage: approvedIds.size, activeCoverage: activeIds.size, submissions });
+  }
+
+  return { statusCounts, weeks };
+}
+
 export async function reject(requestId: number, validatorId: number, comment: string) {
   const request = await vrRepo().findOne({
     where: { id: requestId },
