@@ -1,8 +1,12 @@
+// Unit tests for the useRequesterVacations and useValidatorVacations composables.
+// The Axios instance is fully mocked — no real HTTP requests are made.
+// Tests verify that each function calls the correct endpoint with the correct params.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import api from '@/api';
 import { useRequesterVacations, useValidatorVacations } from '@/composables/useVacations';
 
+// Replace all Axios methods with mocks so we can control what the API returns.
 vi.mock('@/api', () => ({
   default: {
     get: vi.fn(),
@@ -12,6 +16,7 @@ vi.mock('@/api', () => ({
   },
 }));
 
+// A minimal vacation request object used as a stand-in API response across all tests.
 const fakeRequest = {
   id: 1,
   status: 'Pending',
@@ -25,6 +30,8 @@ const fakeRequest = {
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
 
+// --- useRequesterVacations --------------------------------------------------
+
 describe('useRequesterVacations', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -37,24 +44,29 @@ describe('useRequesterVacations', () => {
     const { requests, fetchRequests } = useRequesterVacations();
     await fetchRequests();
 
+    // Must call the requester-only endpoint and store the returned array.
     expect(api.get).toHaveBeenCalledWith('/vacations/me');
     expect(requests.value).toEqual([fakeRequest]);
   });
 
   it('loading is true during the request and false once settled', async () => {
+    // Use a manually controlled Promise so we can inspect the loading flag mid-flight.
     let resolve!: (v: unknown) => void;
     vi.mocked(api.get).mockReturnValueOnce(new Promise((r) => { resolve = r; }));
 
     const { loading, fetchRequests } = useRequesterVacations();
     const promise = fetchRequests();
 
+    // While the promise is pending, loading must be true.
     expect(loading.value).toBe(true);
     resolve({ data: { success: true, data: [] } });
     await promise;
+    // After the promise settles, loading must be false.
     expect(loading.value).toBe(false);
   });
 
   it('fetchRequests resets loading to false when the API throws', async () => {
+    // Even on error, the finally block must clear the loading flag.
     vi.mocked(api.get).mockRejectedValueOnce(new Error('Network error'));
 
     const { loading, fetchRequests } = useRequesterVacations();
@@ -79,10 +91,12 @@ describe('useRequesterVacations', () => {
     const { deleteRequest } = useRequesterVacations();
     await deleteRequest(15);
 
+    // The id must be interpolated into the URL path.
     expect(api.delete).toHaveBeenCalledWith('/vacations/15');
   });
 
   it('submitRequest propagates API errors to the caller', async () => {
+    // The composable must not swallow errors — let the page component handle them.
     const apiError = { response: { status: 409, data: { success: false, error: 'Overlapping request' } } };
     vi.mocked(api.post).mockRejectedValueOnce(apiError);
 
@@ -90,6 +104,8 @@ describe('useRequesterVacations', () => {
     await expect(submitRequest({ startDate: '2024-03-01', endDate: '2024-03-05', reason: '' })).rejects.toEqual(apiError);
   });
 });
+
+// --- useValidatorVacations --------------------------------------------------
 
 describe('useValidatorVacations', () => {
   beforeEach(() => {
@@ -103,6 +119,7 @@ describe('useValidatorVacations', () => {
     const { requests, fetchRequests } = useValidatorVacations();
     await fetchRequests();
 
+    // Pagination params must always be included even when there is no status or name filter.
     expect(api.get).toHaveBeenCalledWith('/vacations', { params: { limit: 50, offset: 0 } });
     expect(requests.value).toEqual([fakeRequest]);
   });
@@ -128,6 +145,7 @@ describe('useValidatorVacations', () => {
   });
 
   it('hasMore is false when the API returns fewer rows than PAGE_SIZE', async () => {
+    // PAGE_SIZE is 50. One row returned means there are no more pages.
     vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
 
     const { hasMore, fetchRequests } = useValidatorVacations();
@@ -137,6 +155,8 @@ describe('useValidatorVacations', () => {
   });
 
   it('fetchMore appends rows and advances the offset', async () => {
+    // First page: 50 rows (full page → hasMore stays true).
+    // Second page (fetchMore): 1 row appended to the existing 50.
     const firstPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
     const secondPage = [{ ...fakeRequest, id: 51 }];
     vi.mocked(api.get)
@@ -147,11 +167,13 @@ describe('useValidatorVacations', () => {
     await fetchRequests('Pending');
     await fetchMore();
 
+    // Total must be 51 and the second call must use offset=50.
     expect(requests.value).toHaveLength(51);
     expect(api.get).toHaveBeenNthCalledWith(2, '/vacations', { params: { status: 'Pending', limit: 50, offset: 50 } });
   });
 
   it('fetchMore sets hasMore to false when the last page is partial', async () => {
+    // A partial second page means we have reached the end of the result set.
     const fullPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
     vi.mocked(api.get)
       .mockResolvedValueOnce({ data: { success: true, data: fullPage } })
@@ -165,12 +187,14 @@ describe('useValidatorVacations', () => {
   });
 
   it('fetchMore does nothing when hasMore is false', async () => {
+    // One row returned → hasMore becomes false → a subsequent fetchMore must be a no-op.
     vi.mocked(api.get).mockResolvedValueOnce({ data: { success: true, data: [fakeRequest] } });
 
     const { fetchRequests, fetchMore } = useValidatorVacations();
-    await fetchRequests();      // returns 1 row → hasMore = false
+    await fetchRequests();
     await fetchMore();
 
+    // Only one GET call should have been made (the initial fetchRequests).
     expect(api.get).toHaveBeenCalledTimes(1);
   });
 
@@ -184,6 +208,7 @@ describe('useValidatorVacations', () => {
   });
 
   it('fetchMore carries the name filter from the last fetchRequests call', async () => {
+    // The internal currentName variable must be remembered between calls.
     const fullPage = Array.from({ length: 50 }, (_, i) => ({ ...fakeRequest, id: i + 1 }));
     vi.mocked(api.get)
       .mockResolvedValueOnce({ data: { success: true, data: fullPage } })
@@ -221,6 +246,7 @@ describe('useValidatorVacations', () => {
     const { rejectRequest } = useValidatorVacations();
     await rejectRequest(7, 'Too many days');
 
+    // The comment must be sent in the request body.
     expect(api.patch).toHaveBeenCalledWith('/vacations/7/reject', { comment: 'Too many days' });
   });
 

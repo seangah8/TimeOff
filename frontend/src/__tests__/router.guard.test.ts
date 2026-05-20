@@ -1,18 +1,23 @@
+// Unit tests for the Vue Router navigation guard.
+// The auth store is mocked so no real API calls are made and we can control
+// exactly what user the guard sees on each navigation attempt.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { User } from '@/types';
 
-// Mock the auth store before the router is imported so the beforeEach guard
-// receives our mock when it calls useAuthStore() during navigation.
+// vi.mock factories are hoisted to the top of the file before any const/let
+// declarations are initialized. vi.hoisted() runs its callback at hoist-time,
+// making the returned values available inside the mock factories below.
 vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn(),
 }));
 
+// The router must be imported AFTER the mock is set up so its beforeEach guard
+// captures our mocked useAuthStore rather than the real one.
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth';
 
-// Helper: configure what the guard will see as the current user.
-// The guard reads auth.user and calls auth.fetchMe() — fetchMe is a no-op
-// here so it does not change the user we set.
+// Helper: tells the guard what it should see as the currently logged-in user.
+// fetchMe is mocked as a no-op so it doesn't change the user we set here.
 function asUser(user: User | null) {
   vi.mocked(useAuthStore).mockReturnValue({
     user,
@@ -24,14 +29,15 @@ function asUser(user: User | null) {
   } as any);
 }
 
-// Note: the router module keeps a module-scoped `initialized` flag so
-// fetchMe is only called once per module lifetime (the first navigation).
-// After that the guard trusts the current user value from the mock, which
-// is exactly what we set in each test via asUser().
+// Note: the router module keeps a module-scoped `initialized` flag so fetchMe
+// is only called once per module lifetime (the very first navigation).
+// After that the guard trusts the current user value from the mock,
+// which is exactly what asUser() sets before each test.
 
 describe('router navigation guards', () => {
   beforeEach(() => {
-    asUser(null); // safe default — no logged-in user
+    // Default to no logged-in user so each test starts from a safe baseline.
+    asUser(null);
   });
 
   // --- Unauthenticated --------------------------------------------------------
@@ -40,6 +46,7 @@ describe('router navigation guards', () => {
     it('is redirected to /login when visiting /requester', async () => {
       asUser(null);
       await router.push('/requester');
+      // Protected route — must redirect to login.
       expect(router.currentRoute.value.path).toBe('/login');
     });
 
@@ -52,6 +59,7 @@ describe('router navigation guards', () => {
     it('can access the /login page', async () => {
       asUser(null);
       await router.push('/login');
+      // Public route — must be accessible without authentication.
       expect(router.currentRoute.value.path).toBe('/login');
     });
 
@@ -82,24 +90,28 @@ describe('router navigation guards', () => {
     it('can reach /requester', async () => {
       asUser(requester);
       await router.push('/requester');
+      // Own dashboard — must be accessible.
       expect(router.currentRoute.value.path).toBe('/requester');
     });
 
     it('is blocked from /validator and lands on /403', async () => {
       asUser(requester);
       await router.push('/validator');
+      // Wrong role — must be redirected to the forbidden page, not login.
       expect(router.currentRoute.value.path).toBe('/403');
     });
 
     it('is auto-redirected from / to /requester', async () => {
       asUser(requester);
       await router.push('/');
+      // A logged-in user visiting the root is sent straight to their dashboard.
       expect(router.currentRoute.value.path).toBe('/requester');
     });
 
     it('is auto-redirected from /login to /requester', async () => {
       asUser(requester);
       await router.push('/login');
+      // Already logged in — no reason to show the login page again.
       expect(router.currentRoute.value.path).toBe('/requester');
     });
 
