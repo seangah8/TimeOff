@@ -8,6 +8,7 @@ vi.mock('@/api', () => ({
     get: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -70,6 +71,15 @@ describe('useRequesterVacations', () => {
     await submitRequest(payload);
 
     expect(api.post).toHaveBeenCalledWith('/vacations', payload);
+  });
+
+  it('deleteRequest sends DELETE /vacations/:id', async () => {
+    vi.mocked(api.delete).mockResolvedValueOnce({ data: { success: true, data: null } });
+
+    const { deleteRequest } = useRequesterVacations();
+    await deleteRequest(15);
+
+    expect(api.delete).toHaveBeenCalledWith('/vacations/15');
   });
 
   it('submitRequest propagates API errors to the caller', async () => {

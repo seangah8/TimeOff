@@ -79,6 +79,54 @@ describe('vacationService.approve', () => {
   });
 });
 
+describe('vacationService.deleteRequest', () => {
+  it('removes a pending request from the database', async () => {
+    const requester = await createRequester();
+    const req = await vacationService.submit(requester.id, '2026-02-01', '2026-02-05', null);
+
+    await vacationService.deleteRequest(req!.id, requester.id);
+
+    await expect(vacationService.approve(req!.id, requester.id))
+      .rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it('throws 404 when the request does not exist', async () => {
+    const requester = await createRequester();
+
+    await expect(vacationService.deleteRequest(99999, requester.id))
+      .rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it('throws 403 when the requester tries to delete someone else\'s request', async () => {
+    const requester = await createRequester('Requester A');
+    const other = await createRequester('Requester B');
+    const req = await vacationService.submit(requester.id, '2026-03-01', '2026-03-05', null);
+
+    await expect(vacationService.deleteRequest(req!.id, other.id))
+      .rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it('throws 409 when trying to delete an approved request', async () => {
+    const requester = await createRequester();
+    const validator = await createValidator();
+    const req = await vacationService.submit(requester.id, '2026-04-01', '2026-04-05', null);
+    await vacationService.approve(req!.id, validator.id);
+
+    await expect(vacationService.deleteRequest(req!.id, requester.id))
+      .rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it('throws 409 when trying to delete a rejected request', async () => {
+    const requester = await createRequester();
+    const validator = await createValidator();
+    const req = await vacationService.submit(requester.id, '2026-05-01', '2026-05-05', null);
+    await vacationService.reject(req!.id, validator.id, 'Not approved');
+
+    await expect(vacationService.deleteRequest(req!.id, requester.id))
+      .rejects.toMatchObject({ statusCode: 409 });
+  });
+});
+
 describe('vacationService.reject', () => {
   it('rejects a pending request with a comment', async () => {
     const requester = await createRequester();

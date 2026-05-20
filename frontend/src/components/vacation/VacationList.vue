@@ -6,7 +6,8 @@ import VacationStatusBadge from './VacationStatusBadge.vue';
 import RequestDetailDialog from './RequestDetailDialog.vue';
 import type { VacationRequest } from '@/types';
 
-defineProps<{ requests: VacationRequest[]; loading: boolean }>();
+defineProps<{ requests: VacationRequest[]; loading: boolean; allowDelete?: boolean }>();
+const emit = defineEmits<{ 'delete-request': [id: number] }>();
 
 const showDetail = ref(false);
 const selectedRequest = ref<VacationRequest | null>(null);
@@ -22,6 +23,11 @@ function formatDate(dateStr: string): string {
 function onRowClick(event: { data: VacationRequest }) {
   selectedRequest.value = event.data;
   showDetail.value = true;
+}
+
+function onDeleteConfirmed(id: number) {
+  showDetail.value = false;
+  emit('delete-request', id);
 }
 </script>
 
@@ -64,6 +70,8 @@ function onRowClick(event: { data: VacationRequest }) {
     v-model:visible="showDetail"
     :request="selectedRequest"
     :show-requester="false"
+    :allow-delete="allowDelete"
+    @confirmed-delete="onDeleteConfirmed"
   />
 </template>
 

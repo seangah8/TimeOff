@@ -10,11 +10,25 @@ import VacationList from '@/components/vacation/VacationList.vue';
 import type { ApiError } from '@/types';
 
 const toast = useToast();
-const { requests, loading, fetchRequests, submitRequest } = useRequesterVacations();
+const { requests, loading, fetchRequests, submitRequest, deleteRequest } = useRequesterVacations();
 const submitting = ref(false);
 const showForm = ref(false);
 
 onMounted(fetchRequests);
+
+async function handleDeleteRequest(id: number) {
+  try {
+    await deleteRequest(id);
+    toast.add({ severity: 'success', summary: 'Request deleted', life: 3000 });
+    await fetchRequests();
+  } catch (e) {
+    const message =
+      axios.isAxiosError(e) && e.response
+        ? (e.response.data as ApiError).error
+        : 'Failed to delete request';
+    toast.add({ severity: 'error', summary: message, life: 4000 });
+  }
+}
 
 async function handleSubmitted(payload: {
   startDate: string;
@@ -45,7 +59,7 @@ async function handleSubmitted(payload: {
       <h1 class="page-title">My Vacation Requests</h1>
       <Button label="New Request" icon="pi pi-plus" @click="showForm = true" />
     </div>
-    <VacationList :requests="requests" :loading="loading" />
+    <VacationList :requests="requests" :loading="loading" allow-delete @delete-request="handleDeleteRequest" />
     <Dialog
       v-model:visible="showForm"
       header="New Vacation Request"

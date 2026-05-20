@@ -1,16 +1,27 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import VacationStatusBadge from './VacationStatusBadge.vue';
 import type { VacationRequest } from '@/types';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   visible: boolean;
   request: VacationRequest | null;
   showRequester?: boolean;
-}>(), { showRequester: true });
+  allowDelete?: boolean;
+}>(), { showRequester: true, allowDelete: false });
 
-const emit = defineEmits<{ 'update:visible': [value: boolean] }>();
+const emit = defineEmits<{
+  'update:visible': [value: boolean];
+  'confirmed-delete': [id: number];
+}>();
+
+const confirmingDelete = ref(false);
+
+watch(() => props.visible, (v) => {
+  if (!v) confirmingDelete.value = false;
+});
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -82,7 +93,18 @@ function formatDateTime(dateStr: string): string {
     </div>
 
     <template #footer>
-      <Button label="Close" severity="secondary" @click="emit('update:visible', false)" />
+      <template v-if="allowDelete && request?.status === 'Pending'">
+        <template v-if="confirmingDelete">
+          <span class="confirm-label">Delete this request?</span>
+          <Button label="Cancel" severity="secondary" text @click="confirmingDelete = false" />
+          <Button label="Yes, delete" severity="danger" @click="emit('confirmed-delete', request!.id)" />
+        </template>
+        <template v-else>
+          <Button label="Close" severity="secondary" @click="emit('update:visible', false)" />
+          <Button label="Delete" severity="danger" outlined @click="confirmingDelete = true" />
+        </template>
+      </template>
+      <Button v-else label="Close" severity="secondary" @click="emit('update:visible', false)" />
     </template>
   </Dialog>
 </template>
@@ -136,5 +158,12 @@ function formatDateTime(dateStr: string): string {
 .detail-comment {
   white-space: pre-wrap;
   color: #c0392b;
+}
+
+.confirm-label {
+  font-size: 0.85rem;
+  color: #555;
+  margin-right: auto;
+  align-self: center;
 }
 </style>

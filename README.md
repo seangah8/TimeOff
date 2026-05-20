@@ -196,6 +196,18 @@ The Axios instance (`api/index.ts`) needs to redirect to `/login` on a 401 respo
 
 ---
 
+## Extra Features
+
+Features added beyond the assignment requirements.
+
+### Authentication pages (Login & Register)
+The assignment did not specify user management — only that two roles exist. Rather than hardcoding a user or passing an ID in the URL, a proper login and register flow was added so each person can create their own account and sign in by name. This makes the app feel complete and realistic, and gives the role-based routing something meaningful to protect.
+
+### Delete pending requests
+Requesters can delete any of their own vacation requests as long as the status is still Pending. Once a validator has acted on a request (Approved or Rejected) it becomes read-only, since removing it would silently erase the validator's recorded decision. The delete button appears in the request detail dialog with a one-step inline confirmation to prevent accidental deletions.
+
+---
+
 ## Known Limitations
 
 - **No password authentication** - anyone who knows (or guesses) a registered name can log in as that user. This is acceptable for a demo/recruitment context but not for production.

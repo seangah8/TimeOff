@@ -31,6 +31,13 @@ router.get(
   vacationController.getAll,
 );
 
+router.delete(
+  '/:id',
+  authenticate,
+  requireRole(UserRole.Requester),
+  vacationController.deleteRequest,
+);
+
 router.patch(
   '/:id/approve',
   authenticate,

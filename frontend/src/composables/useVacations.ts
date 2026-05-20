@@ -24,7 +24,11 @@ export function useRequesterVacations() {
     await api.post('/vacations', payload);
   }
 
-  return { requests, loading, fetchRequests, submitRequest };
+  async function deleteRequest(id: number): Promise<void> {
+    await api.delete(`/vacations/${id}`);
+  }
+
+  return { requests, loading, fetchRequests, submitRequest, deleteRequest };
 }
 
 export function useValidatorVacations() {

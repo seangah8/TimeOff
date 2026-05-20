@@ -52,6 +52,15 @@ export async function approve(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function deleteRequest(req: Request, res: Response, next: NextFunction) {
+  try {
+    await vacationService.deleteRequest(Number(req.params.id), req.user!.userId);
+    res.json({ success: true, data: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function reject(req: Request, res: Response, next: NextFunction) {
   try {
     const { comment } = req.body as { comment: string };

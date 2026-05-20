@@ -70,6 +70,18 @@ export async function approve(requestId: number, validatorId: number) {
   });
 }
 
+export async function deleteRequest(requestId: number, requesterId: number) {
+  const request = await vrRepo().findOne({
+    where: { id: requestId },
+    relations: { requester: true },
+  });
+  if (!request) throw new AppError('Request not found', 404);
+  if (request.requester.id !== requesterId) throw new AppError('You can only delete your own requests', 403);
+  if (request.status !== VacationStatus.Pending) throw new AppError('Only pending requests can be deleted', 409);
+
+  await vrRepo().remove(request);
+}
+
 export async function reject(requestId: number, validatorId: number, comment: string) {
   const request = await vrRepo().findOne({
     where: { id: requestId },
